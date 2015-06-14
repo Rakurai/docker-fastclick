@@ -1,2 +1,2 @@
 # docker-fastclick
-Resources to build a Docker image containing the Fastclick, a Click modular router running on DPDK.
+Resources to build a Docker image containing Fastclick, a branch of the Click modular router using Intel's Data Plane Development Kit (DPDK).
