@@ -2,25 +2,20 @@
 # dpdk image built using phusion/baseimage, refer to instructions for running daemons
 ###
 
-FROM rakurai/dpdk:2.0.0
+FROM rakurai/dpdk:2.0.0-onbuild
 
-# Use baseimage-docker's init system.
-CMD ["/sbin/my_init"]
-
-# ...put your own build instructions here...
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   git \
-  g++
+  g++ \
+  && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ENV CLICK_SRC /usr/src/fastclick
-RUN curl -sSL -o fastclick.zip https://github.com/MappaM/click/archive/master.zip \
-  && unzip fastclick.zip -q -d /usr/src \
-  && mv /usr/src/click-master ${CLICK_SRC}
 
-#RUN git clone https://github.com/MappaM/click.git
-#WORKDIR click
+RUN curl -ksSL http://github.com/MappaM/click/archive/master.tar.gz | tar -xz; \
+  mv click-master ${CLICK_SRC}
 
-RUN cd ${CLICK_SRC} 
+RUN . ${RTE_SDK}/dpdk_env.sh; \
+  cd ${CLICK_SRC} \
   && ./configure \
     --enable-multithread \
     --disable-linuxmodule \
@@ -37,9 +32,7 @@ RUN cd ${CLICK_SRC}
     --with-netmap=no \
     --enable-zerocopy \
     --disable-dpdk-pools \
-  && make userlevel
+  && make install-userlevel \
+  && make clean
 
-#ENTRYPOINT ["tools/setup.sh"]
-
-# Clean up APT when done.
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+CMD ["click"]
